@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Witness - Configuración BLE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .status {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            font-weight: 500;
+        }
+
+        .status.checking {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .step {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            border-color: #007bff;
+            background: #f8f9ff;
+        }
+
+        .step.completed {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #6c757d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .step.active .step-number {
+            background: #007bff;
+        }
+
+        .step.completed .step-number {
+            background: #28a745;
+        }
+
+        .step-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .required {
+            color: #dc3545;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .telegram-setup {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .device-id {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        .success-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-screen .emoji {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .success-screen h2 {
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        .installation-steps {
+            text-align: left;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .installation-steps ol {
+            padding-left: 20px;
+        }
+
+        .installation-steps li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* ✅ NUEVO: Estilos para validación de usuario Telegram */
+        .input-validation {
+            position: relative;
+        }
+
+        .input-validation .validation-icon {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            font-size: 1.2em;
+        }
+
+        .input-validation.valid .validation-icon {
+            color: #28a745;
+        }
+
+        .input-validation.invalid .validation-icon {
+            color: #dc3545;
+        }
+
+        .validation-message {
+            margin-top: 5px;
+            font-size: 0.85em;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .validation-message.valid {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .validation-message.invalid {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .user-preview {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📷 Smart Witness</h1>
+            <p>Configuración Avanzada por Bluetooth</p>
+        </div>
+
+        <div class="content">
+            <!-- Status inicial -->
+            <div id="ble-status" class="status checking">
+                🔍 Verificando compatibilidad...
+            </div>
+
+            <!-- Formulario de configuración -->
+            <div id="config-form">
+                <!-- Paso 1: Información del dispositivo -->
+                <div class="step active" id="step-1">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Información del Dispositivo</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deviceName">Nombre del Dispositivo <span class="required">*</span></label>
+                        <input type="text" id="deviceName" placeholder="Casa Juan - Entrada" maxlength="30" required>
+                        <small>Este nombre aparecerá en las alertas de seguridad</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="alertMsg">Mensaje de Alerta</label>
+                        <textarea id="alertMsg" rows="3" placeholder="ALERTA DE SEGURIDAD ACTIVADA">ALERTA DE SEGURIDAD ACTIVADA</textarea>
+                        <small>Mensaje que se enviará al chat vecinal durante emergencias</small>
+                    </div>
+                </div>
+
+                <!-- ✅ PASO 2: Usuario de Telegram (NUEVO) -->
+                <div class="step" id="step-2">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Usuario de Telegram</div>
+                    </div>
+
+                    <div class="form-group input-validation" id="telegram-user-group">
+                        <label for="telegramUser">Tu Usuario de Telegram <span class="required">*</span></label>
+                        <input type="text" id="telegramUser" placeholder="@tu_usuario" maxlength="33" required>
+                        <div class="validation-icon"></div>
+                        <div class="validation-message"></div>
+                        <small>Ingresa tu nombre de usuario de Telegram (incluyendo la @)</small>
+                        
+                        <div id="user-preview" class="user-preview hidden">
+                            <strong>👤 Usuario que podrá configurar:</strong> <span id="preview-user"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paso 3: Configuración WiFi (renumerado) -->
+                <div class="step" id="step-3">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Configuración WiFi</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ssid">Nombre de Red WiFi <span class="required">*</span></label>
+                        <input type="text" id="ssid" placeholder="MiWiFi_Principal" maxlength="31" required>
+                        <small>El dispositivo se conectará a esta red automáticamente</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Contraseña WiFi <span class="required">*</span></label>
+                        <input type="password" id="password" placeholder="••••••••" maxlength="63" required>
+                        <small>La contraseña se almacena de forma segura en el dispositivo</small>
+                    </div>
+                </div>
+
+                <!-- Paso 4: Chat Vecinal (renumerado) -->
+                <div class="step" id="step-4">
+                    <div class="step-header">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Chat Vecinal (Opcional)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vecinoChatId">ID del Grupo Vecinal</label>
+                        <input type="text" id="vecinoChatId" placeholder="-1001234567890" maxlength="20">
+                        <small>Para obtener el ID: Agrega @RawDataBot al grupo vecinal y copia el número que muestre</small>
+                    </div>
+                </div>
+
+                <!-- Paso 5: Configuración de Telegram (renumerado) -->
+                <div class="step" id="step-5">
+                    <div class="step-header">
+                        <div class="step-number">5</div>
+                        <div class="step-title">Configuración de Telegram</div>
+                    </div>
+
+                    <div class="telegram-setup">
+                        <p><strong>🤖 Bot:</strong> @SmartWitnessBot (preconfigurado)</p>
+                        <p><strong>💬 Chat Personal:</strong> Se configurará automáticamente</p>
+                        <p><strong>👤 Usuario autorizado:</strong> <span id="authorized-user">-</span></p>
+                        
+                        <div id="device-id-section" class="hidden">
+                            <p><strong>🆔 Device ID:</strong></p>
+                            <div id="device-id" class="device-id">Generando...</div>
+                            <button id="generate-telegram" class="btn btn-success" type="button">
+                                📱 Configurar Chat de Telegram
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="connect-btn" class="btn btn-primary" disabled>
+                    🔗 Conectar con Smart Witness
+                </button>
+
+                <button id="send-config-btn" class="btn btn-primary hidden" disabled>
+                    📤 Enviar Configuración
+                </button>
+            </div>
+
+            <!-- Pantalla de éxito -->
+            <div id="success-screen" class="success-screen hidden">
+                <div class="emoji">🎉</div>
+                <h2>¡Configuración Completada!</h2>
+                <ul style="text-align: left; display: inline-block;">
+                    <li>Dispositivo conectado a WiFi</li>
+                    <li>Chat personal de Telegram configurado</li>
+                    <li>Foto de prueba enviada exitosamente</li>
+                    <li>Smart Witness listo para operar</li>
+                </ul>
+
+                <div class="installation-steps">
+                    <h3>📋 Instalación Final:</h3>
+                    <ol>
+                        <li>Desconecta la alimentación actual del dispositivo</li>
+                        <li>Conecta en paralelo a la sirena de alarma</li>
+                        <li>Cada activación capturará y enviará fotos automáticamente</li>
+                        <li>Usa @SmartWitnessBot para control remoto</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        let bleDevice = null;
+        let bleServer = null;
+        let configCharacteristic = null;
+        let statusCharacteristic = null;
+        let deviceIdCharacteristic = null;
+        let chatIdCharacteristic = null;
+        let fieldsCharacteristic = null;
+        let stepCharacteristic = null;
+
+        let isConnected = false;
+        let currentStep = 0;
+        let deviceId = null;
+
+        const SERVICE_UUID = '12345678-1234-1234-1234-123456789abc';
+        const CHAR_CONFIG_UUID = '87654321-4321-4321-4321-cba987654321';
+        const CHAR_STATUS_UUID = '11111111-2222-3333-4444-555555555555';
+        const CHAR_DEVICE_ID_UUID = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+        const CHAR_CHAT_ID_UUID = 'ffffffff-eeee-dddd-cccc-bbbbbbbbbbbb';
+        const CHAR_FIELDS_UUID = '12121212-3434-5656-7878-909090909090';
+        const CHAR_STEP_UUID = '34343434-5656-7878-9090-121212121212';
+
+        // ============================================
+        // ✅ VALIDACIÓN DE USUARIO TELEGRAM
+        // ============================================
+        function normalizeTelegramUsername(username) {
+            username = username.trim().toLowerCase();
+            if (!username.startsWith('@')) {
+                username = '@' + username;
+            }
+            return username;
+        }
+
+        function validateTelegramUsername(username) {
+            username = normalizeTelegramUsername(username);
+            
+            // Validar longitud
+            if (username.length < 2 || username.length > 33) {
+                return { valid: false, message: 'Usuario debe tener entre 1 y 32 caracteres' };
+            }
+            
+            // Validar formato
+            if (!username.startsWith('@')) {
+                return { valid: false, message: 'Usuario debe comenzar con @' };
+            }
+            
+            // Validar caracteres permitidos (a-z, 0-9, _)
+            const usernameOnly = username.substring(1);
+            const validPattern = /^[a-z0-9_]+$/;
+            if (!validPattern.test(usernameOnly)) {
+                return { valid: false, message: 'Solo se permiten letras, números y guiones bajos' };
+            }
+            
+            // No puede empezar o terminar con guión bajo
+            if (usernameOnly.startsWith('_') || usernameOnly.endsWith('_')) {
+                return { valid: false, message: 'No puede empezar o terminar con guión bajo' };
+            }
+            
+            // No puede tener guiones bajos consecutivos
+            if (usernameOnly.includes('__')) {
+                return { valid: false, message: 'No puede tener guiones bajos consecutivos' };
+            }
+            
+            return { valid: true, message: 'Usuario válido', normalized: username };
+        }
+
+        function updateTelegramUserValidation() {
+            const input = document.getElementById('telegramUser');
+            const group = document.getElementById('telegram-user-group');
+            const icon = group.querySelector('.validation-icon');
+            const message = group.querySelector('.validation-message');
+            const preview = document.getElementById('user-preview');
+            const previewUser = document.getElementById('preview-user');
+            const authorizedUser = document.getElementById('authorized-user');
+            
+            const username = input.value.trim();
+            
+            if (username.length === 0) {
+                // Estado neutral
+                group.classList.remove('valid', 'invalid');
+                icon.textContent = '';
+                message.textContent = '';
+                message.classList.remove('valid', 'invalid');
+                preview.classList.add('hidden');
+                authorizedUser.textContent = '-';
+                return;
+            }
+            
+            const validation = validateTelegramUsername(username);
+            
+            if (validation.valid) {
+                // Estado válido
+                group.classList.remove('invalid');
+                group.classList.add('valid');
+                icon.textContent = '✅';
+                message.textContent = validation.message;
+                message.classList.remove('invalid');
+                message.classList.add('valid');
+                
+                // Mostrar preview
+                const normalizedUser = validation.normalized;
+                previewUser.textContent = normalizedUser;
+                authorizedUser.textContent = normalizedUser;
+                preview.classList.remove('hidden');
+                
+                // Actualizar valor normalizado
+                input.value = normalizedUser;
+                
+            } else {
+                // Estado inválido
+                group.classList.remove('valid');
+                group.classList.add('invalid');
+                icon.textContent = '❌';
+                message.textContent = validation.message;
+                message.classList.remove('valid');
+                message.classList.add('invalid');
+                preview.classList.add('hidden');
+                authorizedUser.textContent = '-';
+            }
+            
+            // Actualizar estado del botón
+            updateButtonState();
+        }
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔵 Smart Witness BLE Config loaded');
+            
+            // Verificar compatibilidad BLE
+            if (!navigator.bluetooth) {
+                updateStatus('Este navegador no soporta Bluetooth LE', 'error');
+                return;
+            }
+            
+            updateStatus('✅ Navegador compatible', 'connected');
+            
+            // ✅ Event listeners para validación de usuario Telegram
+            const telegramUserInput = document.getElementById('telegramUser');
+            telegramUserInput.addEventListener('input', updateTelegramUserValidation);
+            telegramUserInput.addEventListener('blur', updateTelegramUserValidation);
+            
+            // Event listeners existentes
+            document.getElementById('connect-btn').addEventListener('click', connectToDevice);
+            document.getElementById('send-config-btn').addEventListener('click', sendConfiguration);
+            document.getElementById('generate-telegram').addEventListener('click', generateTelegramConfig);
+            
+            // Validación de campos requeridos
+            const requiredFields = ['deviceName', 'telegramUser', 'ssid', 'password'];
+            requiredFields.forEach(fieldId => {
+                document.getElementById(fieldId).addEventListener('input', updateButtonState);
+            });
+            
+            updateButtonState();
+        });
+
+        // ============================================
+        // FUNCIONES DE ESTADO
+        // ============================================
+        function updateStatus(message, type = 'checking') {
+            const statusElement = document.getElementById('ble-status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+
+        function updateButtonState() {
+            const connectBtn = document.getElementById('connect-btn');
+            const sendConfigBtn = document.getElementById('send-config-btn');
+            
+            // ✅ Incluir telegramUser en validación
+            const deviceName = document.getElementById('deviceName').value.trim();
+            const telegramUser = document.getElementById('telegramUser').value.trim();
+            const ssid = document.getElementById('ssid').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            // Validar usuario de Telegram
+            const telegramValidation = validateTelegramUsername(telegramUser);
+            
+            const hasRequiredFields = deviceName.length > 0 && 
+                                     telegramUser.length > 0 && 
+                                     telegramValidation.valid &&
+                                     ssid.length > 0 && 
+                                     password.length > 0;
+            
+            connectBtn.disabled = !hasRequiredFields;
+            sendConfigBtn.disabled = !hasRequiredFields || !isConnected;
+        }
+
+        function setStepCompleted(stepNumber) {
+            const step = document.getElementById(`step-${stepNumber}`);
+            if (step) {
+                step.classList.remove('active');
+                step.classList.add('completed');
+            }
+        }
+
+        function setStepActive(stepNumber) {
+            // Remover active de todos los pasos
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+            });
+            
+            // Activar el paso especificado
+            const step = document.getElementById(`step-${stepNumber}`);
+            if (step) {
+                step.classList.add('active');
+            }
+        }
+
+        // ============================================
+        // FUNCIONES BLE
+        // ============================================
+        async function connectToDevice() {
+            try {
+                updateStatus('🔍 Buscando Smart Witness...', 'checking');
+                
+                // Filtrar dispositivos Smart Witness
+                bleDevice = await navigator.bluetooth.requestDevice({
+                    filters: [
+                        { namePrefix: 'SmartWitness_' }
+                    ],
+                    optionalServices: [SERVICE_UUID]
+                });
+
+                console.log('📱 Device found:', bleDevice.name);
+                updateStatus(`📱 Conectando a ${bleDevice.name}...`, 'checking');
+
+                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+                bleServer = await bleDevice.gatt.connect();
+                console.log('🔗 GATT Server connected');
+
+                const service = await bleServer.getPrimaryService(SERVICE_UUID);
+                console.log('📡 Service found');
+
+                // Obtener características
+                configCharacteristic = await service.getCharacteristic(CHAR_CONFIG_UUID);
+                statusCharacteristic = await service.getCharacteristic(CHAR_STATUS_UUID);
+                deviceIdCharacteristic = await service.getCharacteristic(CHAR_DEVICE_ID_UUID);
+                chatIdCharacteristic = await service.getCharacteristic(CHAR_CHAT_ID_UUID);
+                fieldsCharacteristic = await service.getCharacteristic(CHAR_FIELDS_UUID);
+                stepCharacteristic = await service.getCharacteristic(CHAR_STEP_UUID);
+
+                // Suscribirse a notificaciones
+                await statusCharacteristic.startNotifications();
+                await deviceIdCharacteristic.startNotifications();
+                await fieldsCharacteristic.startNotifications();
+                await stepCharacteristic.startNotifications();
+
+                statusCharacteristic.addEventListener('characteristicvaluechanged', onStatusChanged);
+                deviceIdCharacteristic.addEventListener('characteristicvaluechanged', onDeviceIdChanged);
+                fieldsCharacteristic.addEventListener('characteristicvaluechanged', onFieldsChanged);
+                stepCharacteristic.addEventListener('characteristicvaluechanged', onStepChanged);
+
+                isConnected = true;
+                updateStatus(`✅ Conectado a ${bleDevice.name}`, 'connected');
+                
+                // Mostrar botón de enviar configuración
+                document.getElementById('connect-btn').classList.add('hidden');
+                document.getElementById('send-config-btn').classList.remove('hidden');
+                
+                updateButtonState();
+
+            } catch (error) {
+                console.error('❌ Connection error:', error);
+                updateStatus('❌ Error de conexión', 'error');
+            }
+        }
+
+        async function sendConfiguration() {
+            if (!isConnected || !configCharacteristic) {
+                console.error('❌ Not connected or config characteristic not available');
+                updateStatus('❌ Conexión no disponible', 'error');
+                return;
+            }
+
+            try {
+                updateStatus('📤 Enviando configuración...', 'checking');
+
+                // ✅ INCLUIR telegramUser en configuración
+                const config = {
+                    deviceName: document.getElementById('deviceName').value.trim(),
+                    telegramUser: document.getElementById('telegramUser').value.trim(),  // ✅ NUEVO
+                    ssid: document.getElementById('ssid').value.trim(),
+                    password: document.getElementById('password').value.trim(),
+                    alertMsg: document.getElementById('alertMsg').value.trim() || 'ALERTA DE SEGURIDAD ACTIVADA',
+                    vecinoChatId: document.getElementById('vecinoChatId').value.trim()
+                };
+
+                console.log('📝 Sending config:', config);
+
+                const configJson = JSON.stringify(config);
+                const encoder = new TextEncoder();
+                const data = encoder.encode(configJson);
+
+                await configCharacteristic.writeValue(data);
+                console.log('✅ Configuration sent via configCharacteristic');
+
+                // Marcar pasos como completados
+                setStepCompleted(1);
+                setStepCompleted(2);  // ✅ Incluir paso de usuario Telegram
+                setStepCompleted(3);
+                setStepCompleted(4);
+                setStepActive(5);
+                
+                updateStatus('✅ Configuración enviada', 'connected');
+
+            } catch (error) {
+                console.error('❌ Send config error:', error);
+                updateStatus('❌ Error enviando configuración', 'error');
+            }
+        }
+
+        async function generateTelegramConfig() {
+            if (!isConnected) {
+                console.error('❌ Not connected');
+                return;
+            }
+
+            try {
+                updateStatus('📱 Generando configuración de Telegram...', 'checking');
+
+                // ✅ USAR stepCharacteristic SOLO SI EXISTE
+                if (stepCharacteristic) {
+                    const command = 'generate_device_id';
+                    const encoder = new TextEncoder();
+                    const data = encoder.encode(command);
+
+                    await stepCharacteristic.writeValue(data);
+                    console.log('✅ Generate device ID command sent via stepCharacteristic');
+                } else {
+                    // ✅ FALLBACK: Usar método alternativo o simplificado
+                    console.log('⚠️ stepCharacteristic not available, using simplified flow');
+                    
+                    // Simular generación de Device ID localmente como fallback
+                    const deviceId = 'DEVICE_BLE_' + Date.now().toString(36).toUpperCase();
+                    
+                    // Simular notificación de Device ID
+                    document.getElementById('device-id').textContent = deviceId;
+                    document.getElementById('device-id-section').classList.remove('hidden');
+                    
+                    // Habilitar botón de configuración de Telegram
+                    const generateBtn = document.getElementById('generate-telegram');
+                    generateBtn.textContent = '📱 Abrir Telegram para Configurar';
+                    generateBtn.onclick = function() {
+                        const telegramUrl = `https://t.me/SmartWitnessBot?start=${deviceId}`;
+                        window.open(telegramUrl, '_blank');
+                        
+                        generateBtn.textContent = '⏳ Esperando configuración en Telegram...';
+                        generateBtn.disabled = true;
+                        
+                        updateStatus('📱 Telegram abierto. Presiona /start en el bot', 'checking');
+                    };
+                    
+                    updateStatus('📱 Device ID generado (modo simplificado)', 'connected');
+                }
+
+            } catch (error) {
+                console.error('❌ Generate device ID error:', error);
+                updateStatus('❌ Error generando Device ID', 'error');
+            }
+        }
+
+        // ============================================
+        // EVENT HANDLERS BLE
+        // ============================================
+        function onDisconnected() {
+            console.log('📱 Device disconnected');
+            updateStatus('📱 Dispositivo desconectado', 'error');
+            isConnected = false;
+            bleDevice = null;
+            updateButtonState();
+        }
+
+        function onStatusChanged(event) {
+            const decoder = new TextDecoder();
+            const status = decoder.decode(event.target.value);
+            console.log('📊 Status update:', status);
+
+            switch (status) {
+                case 'processing_config':
+                    updateStatus('🔄 Procesando configuración...', 'checking');
+                    break;
+                case 'config_received':
+                    updateStatus('✅ Configuración recibida', 'connected');
+                    break;
+                case 'testing_wifi':
+                    updateStatus('🌐 Probando WiFi...', 'checking');
+                    break;
+                case 'wifi_tested_ok':
+                    updateStatus('✅ WiFi conectado', 'connected');
+                    // ✅ AUTO-TRIGGER DEVICE ID GENERATION CUANDO NO HAY stepCharacteristic
+                    if (!stepCharacteristic) {
+                        console.log('💡 Auto-triggering Device ID generation (no stepCharacteristic)');
+                        setTimeout(() => {
+                            document.getElementById('device-id-section').classList.remove('hidden');
+                            generateTelegramConfig();
+                        }, 1000);
+                    }
+                    break;
+                case 'device_id_generated':
+                    updateStatus('📱 Device ID generado', 'connected');
+                    document.getElementById('device-id-section').classList.remove('hidden');
+                    break;
+                case 'telegram_configured':
+                    updateStatus('✅ Telegram configurado', 'connected');
+                    break;
+                case 'test_photo_sent':
+                    updateStatus('📷 Foto de prueba enviada', 'connected');
+                    break;
+                case 'configuration_complete':
+                    updateStatus('🎉 ¡Configuración completada!', 'connected');
+                    showSuccessScreen();
+                    break;
+                case 'error_invalid_data':
+                    updateStatus('❌ Datos inválidos', 'error');
+                    break;
+                case 'error_invalid_telegram_user':  // ✅ NUEVO: Error de usuario Telegram
+                    updateStatus('❌ Usuario de Telegram inválido', 'error');
+                    setStepActive(2);
+                    break;
+                case 'error_wifi_failed':
+                    updateStatus('❌ Error de WiFi', 'error');
+                    setStepActive(3);
+                    break;
+                default:
+                    updateStatus(`📊 ${status}`, 'checking');
+            }
+        }
+
+        function onDeviceIdChanged(event) {
+            const decoder = new TextDecoder();
+            const deviceIdValue = decoder.decode(event.target.value);
+            console.log('🆔 Device ID received:', deviceIdValue);
+            
+            deviceId = deviceIdValue;
+            document.getElementById('device-id').textContent = deviceIdValue;
+            
+            // Habilitar botón de configuración de Telegram
+            const generateBtn = document.getElementById('generate-telegram');
+            generateBtn.textContent = '📱 Abrir Telegram para Configurar';
+            generateBtn.onclick = function() {
+                // ✅ Abrir Telegram con Device ID
+                const telegramUrl = `https://t.me/SmartWitnessBot?start=${deviceIdValue}`;
+                window.open(telegramUrl, '_blank');
+                
+                generateBtn.textContent = '⏳ Esperando configuración en Telegram...';
+                generateBtn.disabled = true;
+                
+                updateStatus('📱 Telegram abierto. Presiona /start en el bot', 'checking');
+            };
+            
+            updateStatus('📱 Device ID listo - puedes abrir Telegram', 'connected');
+        }
+
+        function onFieldsChanged(event) {
+            const decoder = new TextDecoder();
+            const fieldsData = decoder.decode(event.target.value);
+            console.log('📋 Fields update:', fieldsData);
+            
+            try {
+                const fields = JSON.parse(fieldsData);
+                console.log('📋 Parsed fields:', fields);
+                
+                // Manejar diferentes pasos
+                if (fields.step !== undefined) {
+                    currentStep = fields.step;
+                    
+                    // ✅ Mostrar usuario esperado si está disponible
+                    if (fields.expectedUser) {
+                        const authorizedUser = document.getElementById('authorized-user');
+                        authorizedUser.textContent = fields.expectedUser;
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error parsing fields:', error);
+            }
+        }
+
+        function onStepChanged(event) {
+            const decoder = new TextDecoder();
+            const stepData = decoder.decode(event.target.value);
+            console.log('📋 Step update:', stepData);
+            
+            try {
+                const step = JSON.parse(stepData);
+                currentStep = step.step;
+                console.log('📋 Current step:', currentStep);
+            } catch (error) {
+                console.error('❌ Error parsing step:', error);
+            }
+        }
+
+        function showSuccessScreen() {
+            document.getElementById('config-form').classList.add('hidden');
+            document.getElementById('success-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
