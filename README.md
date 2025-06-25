@@ -1,8 +1,18 @@
 # 📷 Smart Witness - Configuración BLE
 
+> **🚨 Parte del [Smart Witness Project](PROJECT.md)** - Ver [documentación completa del proyecto](PROJECT.md)
+
 **Interfaz web para configuración avanzada del Smart Witness ESP32-CAM via Bluetooth LE**
 
 🌐 **Sitio web**: [https://arielzubigaray.github.io/smart-witness-ble-config/](https://arielzubigaray.github.io/smart-witness-ble-config/)
+
+## 🔗 Componentes del Proyecto
+
+| Componente | Repositorio | Estado | Descripción |
+|------------|-------------|--------|-------------|
+| **🌐 Este Repo** | [smart-witness-ble-config](https://github.com/ArielZubigaray/smart-witness-ble-config) | ✅ **Público** | Interfaz web BLE |
+| **🔧 Firmware** | [smart-witness-esp32cam](https://github.com/ArielZubigaray/smart-witness-esp32cam) | 🔒 Privado | Código ESP32-CAM |
+| **📋 Documentación** | [PROJECT.md](PROJECT.md) | 📖 Público | Vista unificada |
 
 ## 🎯 Descripción
 
@@ -148,11 +158,17 @@ Este proyecto está bajo la licencia MIT.
 
 ## 🔗 Enlaces Relacionados
 
-- **Firmware ESP32-CAM**: [smart-witness-esp32cam](https://github.com/ArielZubigaray/smart-witness-esp32cam)
-- **Bot de Telegram**: [@SmartWitnessBot](https://t.me/SmartWitnessBot)
+### **Proyecto Smart Witness**
+- **📋 Documentación Unificada**: [PROJECT.md](PROJECT.md) - Vista completa del proyecto
+- **🔧 Firmware ESP32-CAM**: [smart-witness-esp32cam](https://github.com/ArielZubigaray/smart-witness-esp32cam)
+- **🤖 Bot de Telegram**: [@SmartWitnessBot](https://t.me/SmartWitnessBot)
+
+### **Enlaces Directos**
+- 🌐 **Configurador Live**: [smart-witness-config](https://arielzubigaray.github.io/smart-witness-ble-config/)
+- 📋 **Issues del Proyecto**: [BLE Config Issues](https://github.com/ArielZubigaray/smart-witness-ble-config/issues)
 
 ---
 
-**Smart Witness** - Sistema de seguridad inteligente con alertas comunitarias automáticas
+**🚨 Smart Witness Project** - Sistema de seguridad inteligente con alertas comunitarias automáticas
 
 📧 **Contacto**: [Issues en GitHub](https://github.com/ArielZubigaray/smart-witness-ble-config/issues) | 🌐 **Web**: [Smart Witness Config](https://arielzubigaray.github.io/smart-witness-ble-config/)
