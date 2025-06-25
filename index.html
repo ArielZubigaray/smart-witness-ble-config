@@ -653,7 +653,7 @@
         }
 
         // ============================================
-        // FUNCIONES BLE
+        // 🔧 FIXED: BLE FUNCTIONS WITH OPTIONAL CHARACTERISTICS
         // ============================================
         async function connectToDevice() {
             try {
@@ -678,27 +678,62 @@
                 const service = await bleServer.getPrimaryService(SERVICE_UUID);
                 console.log('📡 Service found');
 
-                // Obtener características
+                // ✅ FIXED: Get required characteristics first
+                console.log('🔍 Getting required characteristics...');
                 configCharacteristic = await service.getCharacteristic(CHAR_CONFIG_UUID);
                 statusCharacteristic = await service.getCharacteristic(CHAR_STATUS_UUID);
                 deviceIdCharacteristic = await service.getCharacteristic(CHAR_DEVICE_ID_UUID);
                 chatIdCharacteristic = await service.getCharacteristic(CHAR_CHAT_ID_UUID);
-                fieldsCharacteristic = await service.getCharacteristic(CHAR_FIELDS_UUID);
-                stepCharacteristic = await service.getCharacteristic(CHAR_STEP_UUID);
+                
+                console.log('✅ Required characteristics obtained');
 
-                // Suscribirse a notificaciones
+                // ✅ FIXED: Get optional characteristics with try-catch
+                console.log('🔍 Getting optional characteristics...');
+                
+                try {
+                    fieldsCharacteristic = await service.getCharacteristic(CHAR_FIELDS_UUID);
+                    console.log('✅ fieldsCharacteristic found');
+                } catch (error) {
+                    console.log('⚠️ fieldsCharacteristic not available:', error.message);
+                    fieldsCharacteristic = null;
+                }
+
+                try {
+                    stepCharacteristic = await service.getCharacteristic(CHAR_STEP_UUID);
+                    console.log('✅ stepCharacteristic found');
+                } catch (error) {
+                    console.log('⚠️ stepCharacteristic not available:', error.message);
+                    stepCharacteristic = null;
+                }
+
+                // ✅ FIXED: Subscribe to notifications only for available characteristics
+                console.log('📡 Setting up notifications...');
                 await statusCharacteristic.startNotifications();
                 await deviceIdCharacteristic.startNotifications();
-                await fieldsCharacteristic.startNotifications();
-                await stepCharacteristic.startNotifications();
+                
+                if (fieldsCharacteristic) {
+                    await fieldsCharacteristic.startNotifications();
+                    fieldsCharacteristic.addEventListener('characteristicvaluechanged', onFieldsChanged);
+                }
+                
+                if (stepCharacteristic) {
+                    await stepCharacteristic.startNotifications();
+                    stepCharacteristic.addEventListener('characteristicvaluechanged', onStepChanged);
+                }
 
                 statusCharacteristic.addEventListener('characteristicvaluechanged', onStatusChanged);
                 deviceIdCharacteristic.addEventListener('characteristicvaluechanged', onDeviceIdChanged);
-                fieldsCharacteristic.addEventListener('characteristicvaluechanged', onFieldsChanged);
-                stepCharacteristic.addEventListener('characteristicvaluechanged', onStepChanged);
 
                 isConnected = true;
                 updateStatus(`✅ Conectado a ${bleDevice.name}`, 'connected');
+                
+                console.log('🎯 Connection summary:');
+                console.log(`   configCharacteristic: ${configCharacteristic ? '✅' : '❌'}`);
+                console.log(`   statusCharacteristic: ${statusCharacteristic ? '✅' : '❌'}`);
+                console.log(`   deviceIdCharacteristic: ${deviceIdCharacteristic ? '✅' : '❌'}`);
+                console.log(`   chatIdCharacteristic: ${chatIdCharacteristic ? '✅' : '❌'}`);
+                console.log(`   fieldsCharacteristic: ${fieldsCharacteristic ? '✅' : '❌'}`);
+                console.log(`   stepCharacteristic: ${stepCharacteristic ? '✅' : '❌'}`);
                 
                 // Mostrar botón de enviar configuración
                 document.getElementById('connect-btn').classList.add('hidden');
@@ -708,7 +743,7 @@
 
             } catch (error) {
                 console.error('❌ Connection error:', error);
-                updateStatus('❌ Error de conexión', 'error');
+                updateStatus('❌ Error de conexión: ' + error.message, 'error');
             }
         }
 
@@ -767,6 +802,7 @@
 
                 // ✅ USAR stepCharacteristic SOLO SI EXISTE
                 if (stepCharacteristic) {
+                    console.log('📡 Using stepCharacteristic for device ID generation');
                     const command = 'generate_device_id';
                     const encoder = new TextEncoder();
                     const data = encoder.encode(command);
