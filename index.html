@@ -653,7 +653,7 @@
         }
 
         // ============================================
-        // 🔧 FIXED: BLE FUNCTIONS WITH OPTIONAL CHARACTERISTICS
+        // 🔧 FIXED: BLE FUNCTIONS WITH ROBUST NOTIFICATION SETUP
         // ============================================
         async function connectToDevice() {
             try {
@@ -706,23 +706,57 @@
                     stepCharacteristic = null;
                 }
 
-                // ✅ FIXED: Subscribe to notifications only for available characteristics
-                console.log('📡 Setting up notifications...');
-                await statusCharacteristic.startNotifications();
-                await deviceIdCharacteristic.startNotifications();
+                // ✅ FIXED: Setup notifications with individual try-catch and delays
+                console.log('📡 Setting up notifications (with timing delays)...');
                 
-                if (fieldsCharacteristic) {
-                    await fieldsCharacteristic.startNotifications();
-                    fieldsCharacteristic.addEventListener('characteristicvaluechanged', onFieldsChanged);
-                }
-                
-                if (stepCharacteristic) {
-                    await stepCharacteristic.startNotifications();
-                    stepCharacteristic.addEventListener('characteristicvaluechanged', onStepChanged);
+                // Setup statusCharacteristic notifications
+                try {
+                    await statusCharacteristic.startNotifications();
+                    statusCharacteristic.addEventListener('characteristicvaluechanged', onStatusChanged);
+                    console.log('✅ statusCharacteristic notifications enabled');
+                } catch (error) {
+                    console.log('⚠️ statusCharacteristic notifications failed:', error.message);
                 }
 
-                statusCharacteristic.addEventListener('characteristicvaluechanged', onStatusChanged);
-                deviceIdCharacteristic.addEventListener('characteristicvaluechanged', onDeviceIdChanged);
+                // Small delay between setups
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                // Setup deviceIdCharacteristic notifications
+                try {
+                    await deviceIdCharacteristic.startNotifications();
+                    deviceIdCharacteristic.addEventListener('characteristicvaluechanged', onDeviceIdChanged);
+                    console.log('✅ deviceIdCharacteristic notifications enabled');
+                } catch (error) {
+                    console.log('⚠️ deviceIdCharacteristic notifications failed:', error.message);
+                }
+
+                // Small delay between setups
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Setup fieldsCharacteristic notifications (if available)
+                if (fieldsCharacteristic) {
+                    try {
+                        await fieldsCharacteristic.startNotifications();
+                        fieldsCharacteristic.addEventListener('characteristicvaluechanged', onFieldsChanged);
+                        console.log('✅ fieldsCharacteristic notifications enabled');
+                    } catch (error) {
+                        console.log('⚠️ fieldsCharacteristic notifications failed:', error.message);
+                    }
+
+                    // Small delay between setups
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                // Setup stepCharacteristic notifications (if available)
+                if (stepCharacteristic) {
+                    try {
+                        await stepCharacteristic.startNotifications();
+                        stepCharacteristic.addEventListener('characteristicvaluechanged', onStepChanged);
+                        console.log('✅ stepCharacteristic notifications enabled');
+                    } catch (error) {
+                        console.log('⚠️ stepCharacteristic notifications failed:', error.message);
+                    }
+                }
 
                 isConnected = true;
                 updateStatus(`✅ Conectado a ${bleDevice.name}`, 'connected');
